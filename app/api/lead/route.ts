@@ -3,7 +3,6 @@ import { validateLeadSubmission } from '@/lib/validation';
 import { generateCorrelationId, Logger } from '@/lib/logger';
 import { AIResponseGenerator, FALLBACK_MESSAGE } from '@/lib/ai-response-generator';
 import { SMSService } from '@/lib/sms-service';
-import { VoiceService } from '@/lib/voice-service';
 import { RateLimiter } from '@/lib/rate-limiter';
 import { activityStore } from '@/lib/activity-store';
 import { ActivityEvent } from '@/lib/types';

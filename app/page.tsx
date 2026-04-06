@@ -157,6 +157,7 @@ function ActivityItem({ activity }: { activity: ActivityEvent }) {
     processing: 'bg-blue-50 text-blue-700 border-blue-300',
     ai_generated: 'bg-purple-50 text-purple-700 border-purple-300',
     sms_sent: 'bg-emerald-50 text-emerald-700 border-emerald-300',
+    voice_sent: 'bg-indigo-50 text-indigo-700 border-indigo-300',
     failed: 'bg-red-50 text-red-700 border-red-300'
   };
 
@@ -172,6 +173,11 @@ function ActivityItem({ activity }: { activity: ActivityEvent }) {
       </svg>
     ),
     sms_sent: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      </svg>
+    ),
+    voice_sent: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
       </svg>
@@ -193,12 +199,18 @@ function ActivityItem({ activity }: { activity: ActivityEvent }) {
       <svg className="w-5 h-5 text-orange-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
       </svg>
+    ),
+    voice_call: (
+      <svg className="w-5 h-5 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+      </svg>
     )
   };
 
   const typeLabels = {
     lead_form: 'Lead Form',
-    missed_call: 'Missed Call'
+    missed_call: 'Missed Call',
+    voice_call: 'Voice Call'
   };
 
   return (
