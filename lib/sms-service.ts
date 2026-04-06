@@ -14,7 +14,11 @@ export class SMSService {
 
   async sendSMS(to: string, message: string): Promise<string> {
     try {
-      this.logger.info('Sending SMS', { to, messageLength: message.length });
+      this.logger.info('Sending SMS', { 
+        to, 
+        from: this.fromNumber,
+        messageLength: message.length 
+      });
 
       const result = await this.client.messages.create({
         body: message,
@@ -24,7 +28,13 @@ export class SMSService {
 
       this.logger.info('SMS sent successfully', { 
         messageId: result.sid,
-        status: result.status 
+        status: result.status,
+        to: result.to,
+        from: result.from,
+        price: result.price,
+        priceUnit: result.priceUnit,
+        errorCode: result.errorCode,
+        errorMessage: result.errorMessage
       });
 
       return result.sid;

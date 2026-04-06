@@ -26,8 +26,8 @@ yarn-error.log*
 .env
 .env*.local
 
-# Vercel
-.vercel
+# Activity store
+.activity-store.json
 
 # TypeScript
 *.tsbuildinfo

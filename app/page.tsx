@@ -8,35 +8,56 @@ export default function Dashboard() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+    console.log('[Dashboard] Component mounted, fetching initial activities...');
+    
     // Fetch initial activities
     fetch('/api/activity')
-      .then(res => res.json())
-      .then(data => setActivities(data.events || []))
-      .catch(console.error);
+      .then(res => {
+        console.log('[Dashboard] Activity API response status:', res.status);
+        return res.json();
+      })
+      .then(data => {
+        console.log('[Dashboard] Initial activities loaded:', data.events?.length || 0, data.events);
+        setActivities(data.events || []);
+      })
+      .catch(err => {
+        console.error('[Dashboard] Failed to load activities:', err);
+      });
 
     // Connect to SSE stream
+    console.log('[Dashboard] Connecting to SSE stream...');
     const eventSource = new EventSource('/api/activity/stream');
 
     eventSource.onopen = () => {
+      console.log('[Dashboard] SSE connection opened successfully');
       setIsConnected(true);
     };
 
     eventSource.onmessage = (event) => {
+      console.log('[Dashboard] SSE raw event data:', event.data);
       try {
         const data = JSON.parse(event.data);
+        console.log('[Dashboard] SSE event parsed:', data);
         if (data.type !== 'connected') {
-          setActivities(prev => [data, ...prev].slice(0, 50));
+          console.log('[Dashboard] Adding activity to feed:', data);
+          setActivities(prev => {
+            const updated = [data, ...prev].slice(0, 50);
+            console.log('[Dashboard] Updated activities count:', updated.length);
+            return updated;
+          });
         }
       } catch (error) {
-        console.error('Error parsing SSE data:', error);
+        console.error('[Dashboard] Error parsing SSE data:', error, event.data);
       }
     };
 
-    eventSource.onerror = () => {
+    eventSource.onerror = (error) => {
+      console.error('[Dashboard] SSE connection error:', error);
       setIsConnected(false);
     };
 
     return () => {
+      console.log('[Dashboard] Closing SSE connection');
       eventSource.close();
     };
   }, []);
@@ -344,10 +365,11 @@ function LeadForm() {
               id="phone"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="+1234567890"
+              placeholder="(555) 123-4567 or +15551234567"
               className="w-full px-4 py-3 border-2 border-teal-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-transparent transition-all bg-white shadow-sm"
               required
             />
+            <p className="text-xs text-gray-500 mt-1">Any format accepted: (555) 123-4567, 555-123-4567, +15551234567</p>
           </div>
 
           <div>
