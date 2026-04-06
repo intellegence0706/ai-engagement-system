@@ -116,19 +116,50 @@ export default function Dashboard() {
 }
 
 function ActivityFeed({ activities }: { activities: ActivityEvent[] }) {
+  const [testing, setTesting] = useState(false);
+
+  const handleTestVoice = async () => {
+    setTesting(true);
+    try {
+      const response = await fetch('/api/voice/test', { method: 'POST' });
+      const data = await response.json();
+      if (data.success) {
+        alert('✅ Test voice call added! Check the activity feed below.');
+      } else {
+        alert('❌ Failed to add test voice call');
+      }
+    } catch (error) {
+      alert('❌ Error: ' + error);
+    } finally {
+      setTesting(false);
+    }
+  };
+
   return (
     <div className="bg-white/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-teal-200/50 overflow-hidden">
       <div className="px-6 py-5 bg-gradient-to-r from-teal-600 to-emerald-600 border-b border-teal-400/30">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-white">Activity Feed</h2>
+              <p className="text-teal-100 text-xs">Real-time automation events</p>
+            </div>
+          </div>
+          <button
+            onClick={handleTestVoice}
+            disabled={testing}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 disabled:bg-purple-300 text-white rounded-lg font-medium text-sm transition-all shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
             </svg>
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-white">Activity Feed</h2>
-            <p className="text-teal-100 text-xs">Real-time automation events</p>
-          </div>
+            {testing ? 'Testing...' : 'Test Voice'}
+          </button>
         </div>
       </div>
       <div className="divide-y divide-gray-100 max-h-[600px] overflow-y-auto bg-gradient-to-b from-white to-teal-50/30">
@@ -300,6 +331,7 @@ function LeadForm() {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCallingVoice, setIsCallingVoice] = useState(false);
   const [result, setResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -317,7 +349,7 @@ function LeadForm() {
       const data = await response.json();
 
       if (response.ok) {
-        setResult({ type: 'success', message: 'Lead submitted successfully!' });
+        setResult({ type: 'success', message: '✅ SMS sent successfully!' });
         setFormData({ name: '', phone: '', message: '' });
       } else {
         setResult({ type: 'error', message: data.error || 'Submission failed' });
@@ -326,6 +358,37 @@ function LeadForm() {
       setResult({ type: 'error', message: 'Network error occurred' });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleVoiceCall = async () => {
+    if (!formData.phone) {
+      setResult({ type: 'error', message: 'Please enter a phone number' });
+      return;
+    }
+
+    setIsCallingVoice(true);
+    setResult(null);
+
+    try {
+      const response = await fetch('/api/voice/outbound', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setResult({ type: 'success', message: '📞 Voice call initiated! Check activity feed.' });
+        setFormData({ name: '', phone: '', message: '' });
+      } else {
+        setResult({ type: 'error', message: data.error || 'Voice call failed' });
+      }
+    } catch (error) {
+      setResult({ type: 'error', message: 'Network error occurred' });
+    } finally {
+      setIsCallingVoice(false);
     }
   };
 
@@ -404,7 +467,7 @@ function LeadForm() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isCallingVoice}
             className="w-full bg-gradient-to-r from-teal-600 to-emerald-600 text-white py-3.5 px-6 rounded-xl hover:from-teal-700 hover:to-emerald-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
@@ -413,14 +476,38 @@ function LeadForm() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Submitting...
+                Sending SMS...
               </>
             ) : (
               <>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                 </svg>
-                Submit Lead
+                Send SMS
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleVoiceCall}
+            disabled={isSubmitting || isCallingVoice}
+            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3.5 px-6 rounded-xl hover:from-purple-700 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+          >
+            {isCallingVoice ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Calling...
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+                Make Voice Call
               </>
             )}
           </button>
