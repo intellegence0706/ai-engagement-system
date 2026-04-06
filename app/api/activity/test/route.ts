@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { activityStore } from '@/lib/activity-store';
 import { ActivityEvent } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 // Test endpoint to manually add an activity
 export async function POST() {
   try {

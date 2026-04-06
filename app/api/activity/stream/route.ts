@@ -1,6 +1,9 @@
 import { NextRequest } from 'next/server';
 import { activityStore } from '@/lib/activity-store';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(request: NextRequest) {
   const encoder = new TextEncoder();
 

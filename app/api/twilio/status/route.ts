@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import twilio from 'twilio';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET() {
   try {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;

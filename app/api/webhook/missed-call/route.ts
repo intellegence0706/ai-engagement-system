@@ -7,6 +7,9 @@ import { WebhookValidator } from '@/lib/webhook-validator';
 import { activityStore } from '@/lib/activity-store';
 import { ActivityEvent } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   const correlationId = generateCorrelationId();
   const logger = new Logger(correlationId);

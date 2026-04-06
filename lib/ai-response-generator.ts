@@ -77,6 +77,45 @@ export class AIResponseGenerator {
       throw error;
     }
   }
+
+  async generateVoiceResponse(phoneNumber: string, name?: string, message?: string): Promise<string> {
+    try {
+      this.logger.info('Generating AI voice response', { phoneNumber, name });
+
+      const userContext = name && message
+        ? `Generate a voice message for ${name} who said: "${message}"`
+        : name
+        ? `Generate a voice message for ${name} who contacted us`
+        : 'Generate a voice message for someone who contacted us';
+
+      const completion = await this.openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a professional sales representative for an AI agency. Generate a brief, natural-sounding voice message (2-3 sentences, conversational tone) that will be spoken by text-to-speech. Keep it warm, professional, and under 30 seconds when spoken. Do not include any special characters or formatting.'
+          },
+          {
+            role: 'user',
+            content: userContext
+          }
+        ],
+        max_tokens: 150,
+        temperature: 0.7
+      });
+
+      const response = completion.choices[0]?.message?.content?.trim() || '';
+      
+      this.logger.info('AI voice response generated successfully', { 
+        responseLength: response.length 
+      });
+
+      return response;
+    } catch (error) {
+      this.logger.error('Failed to generate AI voice response', error);
+      throw error;
+    }
+  }
 }
 
 export const FALLBACK_MESSAGE = "Thank you for your interest! We've received your message and will get back to you shortly.";

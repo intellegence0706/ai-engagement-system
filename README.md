@@ -7,6 +7,7 @@ A full-stack Next.js application that demonstrates automated lead response capab
 - **Lead Form Handler**: Accepts and validates lead submissions with name, phone, and message
 - **Missed Call Handler**: Processes Twilio webhook events for missed calls
 - **AI Response Generator**: Creates personalized SMS responses using OpenAI GPT-3.5/4
+- **Voice Response System**: AI-generated voice calls with natural text-to-speech
 - **SMS Service**: Sends automated messages via Twilio API
 - **Real-time Dashboard**: Live activity feed showing automation flow
 - **Webhook Validation**: Verifies Twilio webhook signatures for security
@@ -94,6 +95,40 @@ Submit a new lead form.
 }
 ```
 
+### POST /api/voice/outbound
+Make an outbound AI voice call.
+
+**Request Body:**
+```json
+{
+  "phone": "+1234567890",
+  "name": "John Doe",
+  "message": "Interested in AI services"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "correlationId": "1234567890-abc123",
+  "message": "Voice call initiated successfully"
+}
+```
+
+### POST /api/voice/callback
+Twilio voice webhook endpoint for incoming calls.
+
+**Headers:**
+- `x-twilio-signature`: Twilio webhook signature for validation
+
+**Form Data:**
+- `From`: Caller's phone number
+- `To`: Called phone number
+- `CallSid`: Unique call identifier
+
+**Response:** TwiML XML for voice response
+
 ### POST /api/webhook/missed-call
 Twilio webhook endpoint for missed call events.
 
@@ -134,6 +169,16 @@ Fetch recent activity events.
 Server-Sent Events stream for real-time activity updates.
 
 ## Twilio Configuration
+
+### Setting up Voice Webhook for Incoming Calls
+
+1. Log in to your Twilio Console
+2. Navigate to Phone Numbers > Manage > Active Numbers
+3. Select your phone number
+4. Under "Voice Configuration":
+   - Set "A CALL COMES IN" webhook to: `https://your-domain.com/api/voice/callback`
+   - Method: HTTP POST
+5. Save the configuration
 
 ### Setting up Missed Call Webhook
 
